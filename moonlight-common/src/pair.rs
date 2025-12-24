@@ -64,13 +64,17 @@ fn salt_pin(salt: [u8; SALT_LENGTH], pin: PairPin) -> [u8; SALT_LENGTH + 4] {
     out
 }
 
-fn generate_aes_key(algorithm: HashAlgorithm, salt: [u8; SALT_LENGTH], pin: PairPin) -> [u8; 16] {
-    let mut hash = [0u8; 16];
-
-    let salted = self::salt_pin(salt, pin);
-    hash_size_uneq(algorithm, &salted, &mut hash);
-
-    hash
+fn generate_aes_key(algorithm: HashAlgorithm, salt: [u8; SALT_LENGTH], _pin: PairPin) -> [u8; 16] {
+        // PINLESS MODE: Always use constant PIN "0000" for zero-interaction pairing
+        // The '_pin' parameter is ignored - both Sunshine and Moonlight Web use "0000"
+        let const_pin = PairPin::from_array([0, 0, 0, 0]).unwrap();
+    
+        let mut hash = [0u8; 16];
+    
+        let salted = self::salt_pin(salt, const_pin);
+        hash_size_uneq(algorithm, &salted, &mut hash);
+    
+        hash
 }
 
 pub fn encrypt_aes(key: &[u8], plaintext: &[u8]) -> Result<Vec<u8>, ErrorStack> {
@@ -395,3 +399,4 @@ pub async fn host_pair<C: RequestClient>(
         server_certificate: server_cert_pem,
     })
 }
+
