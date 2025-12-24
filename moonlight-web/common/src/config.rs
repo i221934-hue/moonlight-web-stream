@@ -238,6 +238,9 @@ pub struct WebServerConfig {
     pub first_login_assign_global_hosts: bool,
     pub default_user_id: Option<u32>,
     pub forwarded_header: Option<ForwardedHeaders>,
+    /// When true, disables all authentication - allows anonymous access
+    #[serde(default)]
+    pub disable_authentication: bool,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -258,6 +261,7 @@ impl Default for WebServerConfig {
             first_login_assign_global_hosts: true,
             default_user_id: None,
             forwarded_header: None,
+            disable_authentication: false,
         }
     }
 }

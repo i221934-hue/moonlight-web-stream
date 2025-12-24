@@ -22,6 +22,8 @@ pub fn web_config_js_service() -> impl HttpServiceFactory {
 async fn config_js(app: Data<App>) -> HttpResponse {
     let config_json = match serde_json::to_string(&ConfigJs {
         path_prefix: app.config().web_server.url_path_prefix.clone(),
+        // Set to false when authentication is disabled (zero-auth mode)
+        enable_credential_authentication: !app.config().web_server.disable_authentication,
     }) {
         Ok(value) => value,
         Err(err) => {

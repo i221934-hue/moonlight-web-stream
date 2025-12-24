@@ -247,7 +247,36 @@ impl App {
         })
     }
 
+    /// Creates or retrieves an anonymous admin user for zero-auth mode
+    /// This user has full access to all functionality
+    async fn get_or_create_anonymous_user(&self) -> Result<AuthenticatedUser, AppError> {
+        const ANONYMOUS_USERNAME: &str = "anonymous_admin";
+        
+        // Try to find existing anonymous user
+        match self.user_by_name(ANONYMOUS_USERNAME).await {
+            Ok(user) => {
+                // User exists, authenticate them without password
+                Ok(AuthenticatedUser { inner: user })
+            }
+            Err(AppError::UserNotFound) => {
+                // Create new anonymous admin user
+                self.add_user_no_auth(StorageUserAdd {
+                    name: ANONYMOUS_USERNAME.to_string(),
+                    password: None,
+                    role: Role::Admin,
+                    client_unique_id: ANONYMOUS_USERNAME.to_string(),
+                }).await
+            }
+            Err(err) => Err(err),
+        }
+    }
+
     pub async fn user_by_auth(&self, auth: UserAuth) -> Result<AuthenticatedUser, AppError> {
+        // ZERO-AUTH MODE: If authentication is disabled, always return an anonymous admin user
+        if self.config().web_server.disable_authentication {
+            return self.get_or_create_anonymous_user().await;
+        }
+
         match auth {
             UserAuth::None => {
                 let user_id = self.config().web_server.default_user_id.map(UserId);

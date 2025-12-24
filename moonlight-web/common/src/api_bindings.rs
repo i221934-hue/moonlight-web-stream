@@ -18,6 +18,8 @@ const EXPORT_PATH: &str = "../../web-server/web/api_bindings.ts";
 #[ts(export, export_to = EXPORT_PATH)]
 pub struct ConfigJs {
     pub path_prefix: String,
+    /// When false, the frontend should skip the credential/login UI
+    pub enable_credential_authentication: bool,
 }
 
 #[derive(Serialize, Deserialize, Debug, TS, Clone)]
